@@ -1,4 +1,4 @@
-package com.github.hronom.rethinkdb.playground;
+package com.github.hronom.rethinkdb.playground.simple;
 
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.net.Connection;
@@ -33,7 +33,7 @@ public class UpdaterPusher {
                 long id = idGenerator.incrementAndGet();
                 System.out.println(r.db("test_db").table("test_table").get(id)
                     .update(r.hashMap("value", "Entry " + id + " update"))
-                    .run(conn));
+                    .run(conn).toString());
                 System.out.println("Pushed " + id);
             }
         };

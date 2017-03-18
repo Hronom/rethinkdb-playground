@@ -1,4 +1,4 @@
-package com.github.hronom.rethinkdb.playground;
+package com.github.hronom.rethinkdb.playground.simple;
 
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.net.Connection;
@@ -37,7 +37,7 @@ public class InsertUpdaterPusher {
                             .hashMap("id", id)
                             .with("value", "Entry " + id))
                     .optArg("conflict", "update")
-                    .run(conn));
+                    .run(conn).toString());
                 System.out.println("Pushed " + id);
             }
         };

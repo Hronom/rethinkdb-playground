@@ -1,17 +1,15 @@
-package com.github.hronom.rethinkdb.playground;
+package com.github.hronom.rethinkdb.playground.simple;
 
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.net.Connection;
-import com.rethinkdb.net.Cursor;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class AdderPusher {
+public class RemoverPusher {
     public static void main(String[] args) {
         final RethinkDB r = RethinkDB.r;
         final Connection conn = r.connection().hostname("localhost").port(28015).connect();
@@ -33,13 +31,8 @@ public class AdderPusher {
             @Override
             public void run() {
                 long id = idGenerator.incrementAndGet();
-                System.out.println(r.db("test_db").table("test_table")
-                    .insert(
-                        r
-                            .hashMap("id", id)
-                            .with("value", "Entry " + id))
-                    .run(conn));
-                System.out.println("Pushed " + id);
+                System.out.println(r.db("test_db").table("test_table").get(id).delete().run(conn).toString());
+                System.out.println("Deleted " + id);
             }
         };
         timer.schedule(timerTask, TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1));

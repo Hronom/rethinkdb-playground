@@ -1,4 +1,4 @@
-package com.github.hronom.rethinkdb.playground;
+package com.github.hronom.rethinkdb.playground.simple;
 
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.net.Connection;
