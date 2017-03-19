@@ -11,18 +11,18 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class SpamProjectDao {
-    private final String tableName = "spam_project";
+public class ConsoleSpammerStatusDao implements AutoCloseable {
+    private final String tableName = "console_spammer_status";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final CopyOnWriteArrayList<ChangesListenerWorker<SpamProject>>
+    private final CopyOnWriteArrayList<ChangesListenerWorker<ConsoleSpammerStatus>>
         changesListenerWorkers
         = new CopyOnWriteArrayList<>();
 
     private final RethinkDB r = RethinkDB.r;
     private final Connection conn;
 
-    public SpamProjectDao() {
+    public ConsoleSpammerStatusDao() {
         conn = r.connection().hostname("localhost").port(28015).connect();
 
         ArrayList<String> dbList = r.dbList().run(conn);
@@ -33,40 +33,47 @@ public class SpamProjectDao {
         ArrayList<String> tableList = r.db("test_db").tableList().run(conn);
         if (!tableList.contains(tableName)) {
             r.db("test_db").tableCreate(tableName).run(conn);
+            r.db("test_db").table(tableName).indexCreate("groupId").run(conn);
             r.db("test_db").table(tableName).indexWait().run(conn);
         }
     }
 
-    public void subscribe(ChangesListener<SpamProject> changesListener) {
-        ChangesListenerWorker<SpamProject>
+    @Override
+    public void close() throws Exception {
+        for (ChangesListenerWorker<ConsoleSpammerStatus> changesListenerWorker : changesListenerWorkers) {
+            changesListenerWorker.close();
+        }
+    }
+
+    public void subscribe(ChangesListener<ConsoleSpammerStatus> changesListener) {
+        ChangesListenerWorker<ConsoleSpammerStatus>
             changesListenerWorker
             = new ChangesListenerWorker<>(
             conn,
             "test_db",
             tableName,
             changesListener,
-            SpamProject.class
+            ConsoleSpammerStatus.class
         );
         changesListenerWorkers.add(changesListenerWorker);
     }
 
-    public void save(SpamProject spamProject) {
+    public void save(ConsoleSpammerStatus consoleSpammerStatus) {
         r
             .db("test_db")
             .table(tableName)
-            .insert(objectMapper.convertValue(spamProject, Map.class))
+            .insert(objectMapper.convertValue(consoleSpammerStatus, Map.class))
             .optArg("conflict", "replace")
             .run(conn);
     }
 
-    public ArrayList<SpamProject> getAll() {
-        ArrayList<SpamProject> spamProjects = new ArrayList<>();
-        Cursor cursor = r.db("test_db").table(tableName).run(conn);
-        for(Object change : cursor)
-        {
-            SpamProject spamProject = objectMapper.convertValue(change, SpamProject.class);
-            spamProjects.add(spamProject);
+    public ArrayList<ConsoleSpammerStatus> getConsoleSpammerStatusesForGroupId(String groupId) {
+        ArrayList<ConsoleSpammerStatus> consoleSpammerStatuses = new ArrayList<>();
+        Cursor cursor = r.db("test_db").table(tableName).getAll(groupId).optArg("index", "groupId").run(conn);
+        for (Object change : cursor) {
+            ConsoleSpammerStatus consoleSpammerStatus = objectMapper.convertValue(change, ConsoleSpammerStatus.class);
+            consoleSpammerStatuses.add(consoleSpammerStatus);
         }
-        return spamProjects;
+        return consoleSpammerStatuses;
     }
 }
