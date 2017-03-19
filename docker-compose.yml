@@ -18,3 +18,12 @@ services:
       - "28015:28015"
     links:
       - hrono-rethinkdb-node-master
+
+  hrono-rethinkdb-chateau:
+      image: hronom/docker-chateau
+      environment:
+        - RETHINKDB_HOST=hrono-rethinkdb-node-master
+        - RETHINKDB_PORT=28015
+        - RETHINKDB_AUTH_KEY=
+      ports:
+        - "3000:3000"
