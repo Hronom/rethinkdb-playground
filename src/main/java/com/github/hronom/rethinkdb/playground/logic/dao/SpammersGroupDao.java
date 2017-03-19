@@ -27,6 +27,7 @@ public class SpammersGroupDao {
         if (!tableList.contains(tableName)) {
             r.db("test_db").tableCreate(tableName).run(conn);
             r.db("test_db").table(tableName).indexCreate("projectId").run(conn);
+            r.db("test_db").table(tableName).indexWait().run(conn);
         }
     }
 

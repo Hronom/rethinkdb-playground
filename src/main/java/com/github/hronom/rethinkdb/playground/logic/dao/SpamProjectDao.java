@@ -26,6 +26,7 @@ public class SpamProjectDao {
         ArrayList<String> tableList = r.db("test_db").tableList().run(conn);
         if (!tableList.contains(tableName)) {
             r.db("test_db").tableCreate(tableName).run(conn);
+            r.db("test_db").table(tableName).indexWait().run(conn);
         }
     }
 
